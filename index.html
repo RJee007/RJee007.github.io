@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Countdown Timer with Forest Reveal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: #f0f0f0;
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      font-size: 1rem;
+    }
+    #timer {
+      font-size: 1.5rem;
+      margin-top: 20px;
+    }
+    #chart-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: 30px auto;
+    }
+    canvas#revealCanvas {
+      border-radius: 50%;
+      width: 300px;
+      height: 300px;
+      background-color: transparent; /* Changed from black */
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Countdown Timer with Forest Reveal</h1>
+
+  <label>
+    Hours:
+    <input type="number" id="hours" min="0" value="0" />
+  </label>
+  <label>
+    Minutes:
+    <input type="number" id="minutes" min="0" value="1" />
+  </label>
+  <br />
+  <label>
+    Remaining Color:
+    <input type="color" id="remainingColor" value="#00aaff" />
+  </label>
+  <br />
+  <button onclick="startTimer()">Start</button>
+  <button onclick="pauseResumeTimer()" id="pauseBtn" disabled>Pause</button>
+  <button onclick="resetTimer()">Reset</button>
+
+  <div id="timer">
+    <p><strong>Time Remaining:</strong> <span id="countdown">--:--:--</span></p>
+    <p><strong>Time Elapsed:</strong> <span id="elapsed">--:--:--</span></p>
+  </div>
+
+  <div id="chart-container">
+    <canvas id="revealCanvas" width="300" height="300"></canvas>
+  </div>
+
+  <script>
+    let countdownInterval;
+    let startTime;
+    let totalSeconds;
+    let isPaused = false;
+    let elapsedWhenPaused = 0;
+    let imageLoaded = false;
+
+    const canvas = document.getElementById("revealCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const forestImage = new Image();
+    // Image to use as background
+    forestImage.src = "forest.png";
+    forestImage.onload = () => {
+      imageLoaded = true;
+      drawReveal(0); // draw initially once image loads
+    };
+
+    function startTimer() {
+      clearInterval(countdownInterval);
+      isPaused = false;
+      elapsedWhenPaused = 0;
+
+      const hours = parseInt(document.getElementById("hours").value, 10) || 0;
+      const minutes = parseInt(document.getElementById("minutes").value, 10) || 0;
+      totalSeconds = (hours * 60 + minutes) * 60;
+
+      if (totalSeconds <= 0) {
+        alert("Please enter a valid time.");
+        return;
+      }
+
+      startTime = Date.now();
+      document.getElementById("pauseBtn").disabled = false;
+      document.getElementById("pauseBtn").textContent = "Pause";
+
+      countdownInterval = setInterval(updateTimer, 1000);
+      updateTimer(); // draw immediately
+    }
+
+    function updateTimer() {
+      if (isPaused) return;
+
+      const now = Date.now();
+      const elapsed = Math.floor((now - startTime) / 1000) + elapsedWhenPaused;
+      const remaining = totalSeconds - elapsed;
+
+      if (remaining <= 0) {
+        clearInterval(countdownInterval);
+        document.getElementById("countdown").textContent = "00:00:00";
+        document.getElementById("elapsed").textContent = formatTime(totalSeconds);
+        drawReveal(1); // fully revealed
+        document.getElementById("pauseBtn").disabled = true;
+        return;
+      }
+
+      document.getElementById("countdown").textContent = formatTime(remaining);
+      document.getElementById("elapsed").textContent = formatTime(elapsed);
+
+      const progress = elapsed / totalSeconds;
+      drawReveal(progress);
+    }
+
+    function pauseResumeTimer() {
+      if (!countdownInterval) return;
+
+      if (isPaused) {
+        startTime = Date.now();
+        isPaused = false;
+        document.getElementById("pauseBtn").textContent = "Pause";
+        countdownInterval = setInterval(updateTimer, 1000);
+      } else {
+        isPaused = true;
+        clearInterval(countdownInterval);
+        const now = Date.now();
+        elapsedWhenPaused += Math.floor((now - startTime) / 1000);
+        document.getElementById("pauseBtn").textContent = "Resume";
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(countdownInterval);
+      document.getElementById("countdown").textContent = "--:--:--";
+      document.getElementById("elapsed").textContent = "--:--:--";
+      drawReveal(0);
+      isPaused = false;
+      elapsedWhenPaused = 0;
+      document.getElementById("pauseBtn").textContent = "Pause";
+      document.getElementById("pauseBtn").disabled = true;
+    }
+
+    function drawReveal(progress) {
+      if (!imageLoaded) return;
+
+      const w = canvas.width;
+      const h = canvas.height;
+      const centerX = w / 2;
+      const centerY = h / 2;
+      const radius = Math.min(w, h) / 2;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, w, h);
+
+      // Fill background with remaining color
+      ctx.fillStyle = document.getElementById("remainingColor").value;
+      ctx.fillRect(0, 0, w, h);
+
+      // Clip and draw the revealed part of the image
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY);
+      const startAngle = -0.5 * Math.PI;
+      const endAngle = startAngle + progress * 2 * Math.PI;
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(forestImage, 0, 0, w, h);
+      ctx.restore();
+    }
+
+    function formatTime(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+      return `${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+
+    function pad(num) {
+      return num.toString().padStart(2, "0");
+    }
+  </script>
+
+</body>
+</html>
