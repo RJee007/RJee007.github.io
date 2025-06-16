@@ -10,26 +10,45 @@
       padding: 40px;
       background: #f0f0f0;
     }
+
     input, button {
       padding: 10px;
       margin: 5px;
       font-size: 1rem;
     }
+
     #timer {
       font-size: 1.5rem;
       margin-top: 20px;
+      min-height: 120px; /* slightly less space */
     }
+
+    #timer p {
+      font-weight: bold;
+      color: black;
+      margin: 10px 0;
+    }
+
+    #message {
+      font-weight: bold;
+      color: black;
+      font-size: 1.5rem;
+      margin-top: 20px;
+      height: 18px; /* reduced from 30px */
+    }
+
     #chart-container {
       position: relative;
       width: 300px;
       height: 300px;
-      margin: 30px auto;
+      margin: 20px auto;
     }
+
     canvas#revealCanvas {
       border-radius: 50%;
       width: 300px;
       height: 300px;
-      background-color: transparent; /* Changed from black */
+      background-color: transparent;
     }
   </style>
 </head>
@@ -39,11 +58,11 @@
 
   <label>
     Hours:
-    <input type="number" id="hours" min="0" value="0" />
+    <input type="number" id="hours" min="0" value="1" />
   </label>
   <label>
     Minutes:
-    <input type="number" id="minutes" min="0" value="1" />
+    <input type="number" id="minutes" min="0" value="10" />
   </label>
   <br />
   <label>
@@ -56,8 +75,9 @@
   <button onclick="resetTimer()">Reset</button>
 
   <div id="timer">
-    <p><strong>Time Remaining:</strong> <span id="countdown">--:--:--</span></p>
     <p><strong>Time Elapsed:</strong> <span id="elapsed">--:--:--</span></p>
+    <p><strong>Time Remaining:</strong> <span id="countdown">--:--:--</span></p>
+    <div id="message"></div>
   </div>
 
   <div id="chart-container">
@@ -76,17 +96,17 @@
     const ctx = canvas.getContext("2d");
 
     const forestImage = new Image();
-    // Image to use as background
     forestImage.src = "forest.png";
     forestImage.onload = () => {
       imageLoaded = true;
-      drawReveal(0); // draw initially once image loads
+      drawReveal(0);
     };
 
     function startTimer() {
       clearInterval(countdownInterval);
       isPaused = false;
       elapsedWhenPaused = 0;
+      document.getElementById("message").textContent = "";
 
       const hours = parseInt(document.getElementById("hours").value, 10) || 0;
       const minutes = parseInt(document.getElementById("minutes").value, 10) || 0;
@@ -102,7 +122,7 @@
       document.getElementById("pauseBtn").textContent = "Pause";
 
       countdownInterval = setInterval(updateTimer, 1000);
-      updateTimer(); // draw immediately
+      updateTimer();
     }
 
     function updateTimer() {
@@ -116,7 +136,8 @@
         clearInterval(countdownInterval);
         document.getElementById("countdown").textContent = "00:00:00";
         document.getElementById("elapsed").textContent = formatTime(totalSeconds);
-        drawReveal(1); // fully revealed
+        document.getElementById("message").textContent = "Good job! 😀🥰";
+        drawReveal(1);
         document.getElementById("pauseBtn").disabled = true;
         return;
       }
@@ -147,8 +168,11 @@
 
     function resetTimer() {
       clearInterval(countdownInterval);
+      document.getElementById("hours").value = 1;
+      document.getElementById("minutes").value = 10;
       document.getElementById("countdown").textContent = "--:--:--";
       document.getElementById("elapsed").textContent = "--:--:--";
+      document.getElementById("message").textContent = "";
       drawReveal(0);
       isPaused = false;
       elapsedWhenPaused = 0;
@@ -165,14 +189,11 @@
       const centerY = h / 2;
       const radius = Math.min(w, h) / 2;
 
-      // Clear canvas
       ctx.clearRect(0, 0, w, h);
 
-      // Fill background with remaining color
       ctx.fillStyle = document.getElementById("remainingColor").value;
       ctx.fillRect(0, 0, w, h);
 
-      // Clip and draw the revealed part of the image
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(centerX, centerY);
