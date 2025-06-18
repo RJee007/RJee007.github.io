@@ -52,9 +52,10 @@
     }
 
     #dayProgressContainer {
-      width: 90%;
-      max-width: 900px; /* bigger */
+      width: 80%;
+      max-width: 500px;
       margin: 40px auto 10px;
+      position: relative; /* needed for overlay */
     }
 
     #dayProgressBar {
@@ -63,24 +64,45 @@
       background-color: #ccc; /* swapped */
       position: relative;
       border: 1px solid black; /* thin black line */
-      border-radius: 12.5px; /* half the height for fully rounded */
-      overflow: hidden; /* clip child fill */
+      border-radius: 12.5px; /* rounded */
+      overflow: hidden;
+      z-index: 1;
     }
 
     #dayProgressFill {
       height: 100%;
       background-color: #4caf50; /* swapped */
       width: 0%;
-      border-radius: 12.5px 0 0 12.5px; /* round left corners only */
-      transition: width 0.3s ease;
+      border-radius: 12.5px 0 0 12.5px;
+      transition: width 0.5s ease;
+      z-index: 1;
+    }
+
+    /* Overlay for hour markers */
+    #hourMarkers {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 25px; /* same as progress bar */
+      width: 100%;
+      pointer-events: none; /* allow clicks to pass through */
+      background-image:
+        repeating-linear-gradient(
+          to right,
+          transparent,
+          transparent calc(10% - 1px),
+          rgba(0, 0, 0, 0.4) calc(10% - 1px),
+          rgba(0, 0, 0, 0.4) 10%
+        );
+      border-radius: 12.5px;
+      z-index: 2; /* above fill */
     }
 
     #dayTimeInfo {
       margin-top: 10px;
       font-weight: bold;
-      white-space: nowrap; /* prevent line breaks */
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: visible;
     }
   </style>
 </head>
@@ -120,6 +142,7 @@
     <div id="dayProgressBar">
       <div id="dayProgressFill"></div>
     </div>
+    <div id="hourMarkers"></div>
     <div id="dayTimeInfo"></div>
   </div>
 
