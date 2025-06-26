@@ -279,23 +279,29 @@
       return num.toString().padStart(2, "0");
     }
 
-    function updateDayProgress() {
-      const now = new Date();
-      const start = new Date(now);
-      start.setHours(8, 0, 0, 0);
-      const end = new Date(now);
-      end.setHours(18, 0, 0, 0);
+  function updateDayProgress() {
+     const now = new Date();
+  const start = new Date(now);
+  start.setHours(8, 0, 0, 0);
+  const end = new Date(now);
+  end.setHours(18, 0, 0, 0);
 
-      const total = end - start;
-      const elapsed = now - start;
-      const clampedElapsed = Math.max(0, Math.min(total, elapsed));
-      const percent = (clampedElapsed / total) * 100;
-      const percentLeft = 100 - percent;
+  const total = end - start;
+  const elapsed = now - start;
+  const clampedElapsed = Math.max(0, Math.min(total, elapsed));
+  const percent = (clampedElapsed / total) * 100;
+  const percentLeft = 100 - percent;
 
-      document.getElementById("dayProgressFill").style.width = `${percent}%`;
-      document.getElementById("dayTimeInfo").textContent =
-        `Time block: 8am-6pm. Time remaining: ${formatTime(Math.floor((total - clampedElapsed) / 1000))} (${percentLeft.toFixed(2)}% remaining)`;
-    }
+  document.getElementById("dayProgressFill").style.width = `${percent}%`;
+
+  const remainingTimeStr = formatTime(Math.floor((total - clampedElapsed) / 1000));
+  document.getElementById("dayTimeInfo").innerHTML =
+    `Time block: 8am–6pm. Time remaining: ${remainingTimeStr} hrs<br>` +
+    `Percent time remaining: ${percentLeft.toFixed(2)}%`;
+}
+
+
+
 
     setInterval(updateDayProgress, 1000);
     updateDayProgress(); // initial call
