@@ -20,7 +20,7 @@
     #timer {
       font-size: 1.5rem;
       margin-top: 20px;
-      min-height: 120px;
+      min-height: 140px;
     }
 
     #timer p {
@@ -68,7 +68,7 @@
       position: absolute;
       top: 0;
       transform: translateX(-50%);
-      font-size: 1rem; /* Matches Time block info */
+      font-size: 1rem;
       color: #555;
       font-weight: bold;
     }
@@ -141,6 +141,7 @@
   <button onclick="resetTimer()">Reset</button>
 
   <div id="timer">
+    <p id="startEnd"><strong>Start time:</strong> --:-- <strong>End time:</strong> --:--</p>
     <p><strong>Time Elapsed:</strong> <span id="elapsed">--:--:--</span></p>
     <p><strong>Time Remaining:</strong> <span id="countdown">--:--:--</span></p>
     <div id="message"></div>
@@ -161,7 +162,6 @@
     <div id="dayProgressBar">
       <div id="dayProgressFill"></div>
       <div id="hourMarkers">
-        <!-- Ticks for each hour from 9am to 5pm (9 total lines at 10% steps) -->
         <div class="tick" style="left: 10%;"></div>
         <div class="tick" style="left: 20%;"></div>
         <div class="tick" style="left: 30%;"></div>
@@ -210,6 +210,14 @@
       }
 
       startTime = Date.now();
+
+      const startDate = new Date();
+      const endDate = new Date(startDate.getTime() + totalSeconds * 1000);
+      const formattedStart = formatAMPM(startDate);
+      const formattedEnd = formatAMPM(endDate);
+      document.getElementById("startEnd").innerHTML =
+        `<strong>Start time:</strong> ${formattedStart} <strong>End time:</strong> ${formattedEnd}`;
+
       document.getElementById("pauseBtn").disabled = false;
       document.getElementById("pauseBtn").textContent = "Pause";
 
@@ -265,6 +273,7 @@
       document.getElementById("countdown").textContent = "--:--:--";
       document.getElementById("elapsed").textContent = "--:--:--";
       document.getElementById("message").textContent = "";
+      document.getElementById("startEnd").innerHTML = `<strong>Start time:</strong> --:-- <strong>End time:</strong> --:--`;
       drawReveal(0);
       isPaused = false;
       elapsedWhenPaused = 0;
@@ -307,6 +316,15 @@
 
     function pad(num) {
       return num.toString().padStart(2, "0");
+    }
+
+    function formatAMPM(date) {
+      let hours = date.getHours();
+      let minutes = date.getMinutes();
+      const ampm = hours >= 12 ? "pm" : "am";
+      hours = hours % 12 || 12;
+      const mins = minutes.toString().padStart(2, "0");
+      return `${hours}.${mins}${ampm}`;
     }
 
     function updateDayProgress() {
