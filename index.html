@@ -41,7 +41,7 @@
       position: relative;
       width: 300px;
       height: 300px;
-      margin: 20px auto 60px auto; /* more space below circle */
+      margin: 20px auto 60px auto;
     }
 
     canvas#revealCanvas {
@@ -55,54 +55,67 @@
       width: 80%;
       max-width: 500px;
       margin: 40px auto 10px;
-      position: relative; /* needed for overlay */
+      position: relative;
     }
+
+    #dayProgressLabelBar {
+      position: relative;
+      height: 20px;
+      margin-bottom: 5px;
+    }
+
+
+   .time-label {
+     position: absolute;
+     top: 0;
+     transform: translateX(-50%);
+     font-size: 1rem; /* Same as #dayTimeInfo */
+     color: #555;
+     font-weight: bold;
+}
 
     #dayProgressBar {
       width: 100%;
       height: 25px;
-      background-color: #ccc; /* swapped */
+      background-color: #4caf50; /* green = remaining */
       position: relative;
-      border: 1px solid black; /* thin black line */
-      border-radius: 12.5px; /* rounded */
+      border: 1px solid black;
+      border-radius: 12.5px;
       overflow: hidden;
       z-index: 1;
     }
 
     #dayProgressFill {
       height: 100%;
-      background-color: #4caf50; /* swapped */
+      background-color: #ccc; /* grey = elapsed */
       width: 0%;
       border-radius: 12.5px 0 0 12.5px;
       transition: width 0.5s ease;
       z-index: 1;
     }
 
-    /* Overlay for hour markers */
     #hourMarkers {
       position: absolute;
       top: 0;
       left: 0;
-      height: 25px; /* same as progress bar */
+      height: 25px;
       width: 100%;
-      pointer-events: none; /* allow clicks to pass through */
-      background-image:
-        repeating-linear-gradient(
-          to right,
-          transparent,
-          transparent calc(10% - 1px),
-          rgba(0, 0, 0, 0.4) calc(10% - 1px),
-          rgba(0, 0, 0, 0.4) 10%
-        );
-      border-radius: 12.5px;
-      z-index: 2; /* above fill */
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .tick {
+      position: absolute;
+      top: 0;
+      width: 1px;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.3);
     }
 
     #dayTimeInfo {
       margin-top: 10px;
       font-weight: bold;
       white-space: nowrap;
-      overflow: visible;
     }
   </style>
 </head>
@@ -139,10 +152,23 @@
   </div>
 
   <div id="dayProgressContainer">
+    <div id="dayProgressLabelBar">
+      <span class="time-label" style="left: 10%;">9am</span>
+      <span class="time-label" style="left: 30%;">11am</span>
+      <span class="time-label" style="left: 50%;">1pm</span>
+      <span class="time-label" style="left: 70%;">3pm</span>
+      <span class="time-label" style="left: 90%;">5pm</span>
+    </div>
     <div id="dayProgressBar">
       <div id="dayProgressFill"></div>
+      <div id="hourMarkers">
+        <div class="tick" style="left: 10%;"></div>
+        <div class="tick" style="left: 30%;"></div>
+        <div class="tick" style="left: 50%;"></div>
+        <div class="tick" style="left: 70%;"></div>
+        <div class="tick" style="left: 90%;"></div>
+      </div>
     </div>
-    <div id="hourMarkers"></div>
     <div id="dayTimeInfo"></div>
   </div>
 
@@ -279,32 +305,29 @@
       return num.toString().padStart(2, "0");
     }
 
-  function updateDayProgress() {
-     const now = new Date();
-  const start = new Date(now);
-  start.setHours(8, 0, 0, 0);
-  const end = new Date(now);
-  end.setHours(18, 0, 0, 0);
+    function updateDayProgress() {
+      const now = new Date();
+      const start = new Date(now);
+      start.setHours(8, 0, 0, 0);
+      const end = new Date(now);
+      end.setHours(18, 0, 0, 0);
 
-  const total = end - start;
-  const elapsed = now - start;
-  const clampedElapsed = Math.max(0, Math.min(total, elapsed));
-  const percent = (clampedElapsed / total) * 100;
-  const percentLeft = 100 - percent;
+      const total = end - start;
+      const elapsed = now - start;
+      const clampedElapsed = Math.max(0, Math.min(total, elapsed));
+      const percentElapsed = (clampedElapsed / total) * 100;
+      const percentRemaining = 100 - percentElapsed;
 
-  document.getElementById("dayProgressFill").style.width = `${percent}%`;
+      document.getElementById("dayProgressFill").style.width = `${percentElapsed}%`;
 
-  const remainingTimeStr = formatTime(Math.floor((total - clampedElapsed) / 1000));
-  document.getElementById("dayTimeInfo").innerHTML =
-    `Time block: 8am–6pm. Time remaining: ${remainingTimeStr} hrs<br>` +
-    `Percent time remaining: ${percentLeft.toFixed(2)}%`;
-}
-
-
-
+      const remainingTimeStr = formatTime(Math.floor((total - clampedElapsed) / 1000));
+      document.getElementById("dayTimeInfo").innerHTML =
+        `Time block: 8am–6pm. Time remaining: ${remainingTimeStr} hrs<br>` +
+        `Percent time remaining: ${percentRemaining.toFixed(2)}%`;
+    }
 
     setInterval(updateDayProgress, 1000);
-    updateDayProgress(); // initial call
+    updateDayProgress();
   </script>
 
 </body>
